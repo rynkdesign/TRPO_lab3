@@ -4,26 +4,30 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QFileSystemModel>
+#include <QPushButton>
 #include <QTreeView>
 #include <QTableView>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
 #include "themewidget.h"
 
-class MainWindow : public QMainWindow
+class MainWindow : public QWidget
 {
     Q_OBJECT
 private slots:
 
     void on_selectionChangedSlot(const QItemSelection &selected, const QItemSelection &deselected);
+    void slotChooseDirectory();
+
 
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 private:
     QFileSystemModel *fileModel;
-    QFileSystemModel *dirModel;
-    QTreeView *treeView;
     QTableView *tableView;
-    ThemeWidget *themeWidget;
+    QString homePath;
 };
 
 #endif // MAINWINDOW_H
