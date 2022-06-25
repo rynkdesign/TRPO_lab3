@@ -123,10 +123,10 @@ QChart *Charts::createBarChart(int valueCount) const
 
 void Charts::reDrawChart() const
 {
-    //chart_drawChart(data_);
+
 }
 
 void Charts::drawChart(const DataStorage& data)
 {
- //   data_ = data;
+
 }

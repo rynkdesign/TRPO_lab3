@@ -19,6 +19,7 @@ SOURCES += \
 HEADERS += \
     charts.h \
     data.h \
+    ioccontainer.h \
     mainwindow.h
 
 FORMS +=
