@@ -90,6 +90,7 @@ ThemeWidget::~ThemeWidget()
 {
 }
 
+
 void ThemeWidget::connectSignals()
 {
     connect(m_themeComboBox,
@@ -203,13 +204,52 @@ QChart *ThemeWidget::createBarChart(int valueCount) const
     chart->setTitle("Bar chart");
 
     QStackedBarSeries *series = new QStackedBarSeries(chart);
-    for (int i(0); i < m_dataTable.count(); i++) {
+
+    for (int i(0); i < m_dataTable.count(); i++)
+    {
         QBarSet *set = new QBarSet("Bar set " + QString::number(i));
+
         for (const Data &data : m_dataTable[i])
+        {
             *set << data.first.y();
+        }
         series->append(set);
     }
+
+    chart->removeAllSeries();
     chart->addSeries(series);
+    chart->setAnimationOptions(QChart::SeriesAnimations); // Красивая анимация
+    chart->createDefaultAxes();
+
+
+    return chart;
+}
+
+QChart *ThemeWidget::createBarChartNew(QVector<DataStorage> data, bool isColored)
+{
+    QChart *chart = new QChart();
+    chart->setTitle("Bar chart");
+
+    auto series = new QBarSeries();
+
+    int i = 0;
+    foreach (DataStorage elem, data)
+    {
+        QString legendHeader (elem.key);
+        QBarSet *set = new QBarSet(legendHeader);
+        *set << elem.value;
+        if (!isColored)
+        {
+            auto color_ = i % 2 ? Qt::black : Qt::lightGray;
+            set->setBrush(QBrush(color_, Qt::SolidPattern));
+        }
+        series->append(set);
+        i++;
+    }
+
+    chart->removeAllSeries();
+    chart->addSeries(series);
+    chart->setAnimationOptions(QChart::SeriesAnimations); // Красивая анимация
     chart->createDefaultAxes();
 
     return chart;
@@ -241,11 +281,14 @@ QChart *ThemeWidget::createPieChart() const
     chart->setTitle("Pie chart");
 
     qreal pieSize = 1.0 / m_dataTable.count();
-    for (int i = 0; i < m_dataTable.count(); i++) {
+    for (int i = 0; i < m_dataTable.count(); i++)
+    {
         QPieSeries *series = new QPieSeries(chart);
-        for (const Data &data : m_dataTable[i]) {
+        for (const Data &data : m_dataTable[i])
+        {
             QPieSlice *slice = series->append(data.second, data.first.y());
-            if (data == m_dataTable[i].first()) {
+            if (data == m_dataTable[i].first())
+            {
                 slice->setLabelVisible();
                 slice->setExploded();
             }
@@ -255,7 +298,36 @@ QChart *ThemeWidget::createPieChart() const
         series->setHorizontalPosition(hPos);
         series->setVerticalPosition(0.5);
         chart->addSeries(series);
+
     }
+
+    return chart;
+}
+
+QChart *ThemeWidget::createPieChartNew(QVector<DataStorage> data, bool isColored)
+{
+    QChart *chart = new QChart();
+    chart->setTitle("Pie chart");
+
+    auto series = new QPieSeries();
+
+    int i = 0;
+    foreach (DataStorage elem, data)
+    {
+        QString legendHeader (elem.key);
+        series->append(legendHeader, elem.value);
+        if (!isColored)
+        {
+            auto color_ = i % 2 ? Qt::black : Qt::lightGray;
+            series->slices().at(i)->setBrush(QBrush(color_, Qt::SolidPattern));
+        }
+        i++;
+    }
+
+    chart->removeAllSeries();
+    chart->addSeries(series);
+    chart->setAnimationOptions(QChart::SeriesAnimations); // Красивая анимация
+    chart->createDefaultAxes();
 
     return chart;
 }

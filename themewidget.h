@@ -4,6 +4,16 @@
 #include <QtWidgets/QWidget>
 #include <QtCharts/QChartGlobal>
 
+#include <QtCharts/QChartView>
+#include <QtCharts/QPieSeries>
+#include <QtCharts/QPieSlice>
+
+#include <QJsonDocument>
+#include <QtCharts/QBarSeries>
+#include <QtCharts/QBarSet>
+
+#include "data.h"
+
 QT_BEGIN_NAMESPACE
 class QComboBox;
 class QCheckBox;
@@ -53,6 +63,9 @@ public:
     QChart *createSplineChart() const;
     QChart *createScatterChart() const;
 
+    QChart *createBarChartNew (QVector <DataStorage>, bool isColored); // НОВАЯ ФУНКЦИЯ ДЛЯ BARCHART
+    QChart *createPieChartNew (QVector<DataStorage> data, bool isColored); // НОВАЯ ФУНКЦИЯ ДЛЯ PIECHART
+
 private:
     int m_listCount;
     int m_valueMax;
@@ -64,6 +77,10 @@ private:
     QCheckBox *m_antialiasCheckBox;
     QComboBox *m_animatedComboBox;
     QComboBox *m_legendComboBox;
+
+protected:
+    QChart *chart;
+    QPieSeries *series;
 };
 
 #endif /* THEMEWIDGET_H */

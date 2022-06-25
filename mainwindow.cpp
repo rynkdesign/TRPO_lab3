@@ -35,7 +35,7 @@
 #include <QtCore/QTime>
 #include <QtCharts/QBarCategoryAxis>
 #include <QFileDialog>
-
+#include "themewidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -58,19 +58,20 @@ MainWindow::MainWindow(QWidget *parent)
     tableView->setModel(fileModel);
 
     // Добавление диаграммы
-    QChartView *chartView;
     auto themeWidget = new ThemeWidget();
-    QChart *chartBar =  themeWidget->createBarChart(7);
+    //QChart *chartBar =  themeWidget->createPieChart();
+    chartBar =  themeWidget->createBarChart(7);
     chartView = new QChartView(chartBar);
 
     // Объявляем Buttons
     auto directoryButton = new QPushButton ("Открыть папку");
     auto printChartButton = new QPushButton ("Печать графика");
-    auto checkboxBlackWhiteChart = new QCheckBox("Черно-белый график");
+    checkboxColor = new QCheckBox("Черно-белый график");
     auto boxLabel = new QLabel("Выберите тип диаграммы");
-    auto chartTypeCombobox = new QComboBox(); // Выбор типа графика
-    chartTypeCombobox->insertItem(1, QString("BarChart"));
-    chartTypeCombobox->insertItem(2, QString("PieChart"));
+
+    boxType = new QComboBox(); // Выбор типа графика
+    boxType->insertItem(1, QString("BarChart"));
+    boxType->insertItem(2, QString("PieChart"));
 
     // Объявляем Layouts
     auto horizontalLayout=new QHBoxLayout(this);
@@ -87,50 +88,40 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Buttons над графиком
     chartLayout->addWidget(boxLabel); // Label над графиком
-    chartLayout->addWidget(chartTypeCombobox); // Тип графика
-    chartLayout->addWidget(checkboxBlackWhiteChart); // Ч-б
+    chartLayout->addWidget(boxType); // Тип графика
+    chartLayout->addWidget(checkboxColor); // Ч-б
     chartLayout->addWidget(printChartButton); // Печать в PDF
 
+    QItemSelectionModel *selectionModel = tableView->selectionModel();
+
     // Slots
-    connect(directoryButton,&QPushButton::clicked,this,&MainWindow::slotChooseDirectory);
+    connect(directoryButton,&QPushButton::clicked,this,&MainWindow::slotChooseDirectory); // Кнопка выбора папки
+    connect(boxType,SIGNAL(currentTextChanged(const QString&)),this,SLOT(slotSelectionComboboxChanged())); // Выбор типа графика
+    connect(checkboxColor, SIGNAL(toggled(bool)), this, SLOT(slotSelectionColorChanged())); // Выбор Ч-Б
+    // Выбор конкретного файла
+    connect(selectionModel,SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),this,SLOT(slotSelectionChanged(const QItemSelection &, const QItemSelection &)));
 }
 
-
 // Выбор конкретного файла
-void MainWindow::on_selectionChangedSlot(const QItemSelection &selected, const QItemSelection &deselected)
+void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    //Q_UNUSED(selected);
     Q_UNUSED(deselected);
-    //QModelIndex index = treeView->selectionModel()->currentIndex();
     QModelIndexList indexs =  selected.indexes();
-    QString filePath = "";
-
-    // Размещаем инфо в statusbar относительно выделенного модельного индекса
-
-    if (indexs.count() >= 1) {
-        QModelIndex ix =  indexs.constFirst();
-        //filePath = dirModel->filePath(ix);
-        //this->statusBar()->showMessage("Выбранный путь : " + dirModel->filePath(indexs.constFirst()));
+    if (indexs.count() < 1)
+    {
+        return;
     }
 
-    //TODO: !!!!!
-    /*
-    Тут простейшая обработка ширины первого столбца относительно длины названия папки.
-    Это для удобства, что бы при выборе папки имя полностью отображалась в  первом столбце.
-    Требуется доработка(переработка).
-    */
-    int length = 200;
-    int dx = 30;
+    QString filePath{""}; // Полный путь к файлу
+    filePath = fileModel->filePath(indexs.constFirst());
 
-    //if (dirModel->fileName(index).length() * dx > length) {
-    //    length = length + dirModel->fileName(index).length() * dx;
-    //    qDebug() << "r = " << index.row() << "c = " << index.column() << dirModel->fileName(index) << dirModel->fileInfo(
-    //                 index).size();
-
-    //}
-
-    //treeView->header()->resizeSection(index.column(), length + dirModel->fileName(index).length());
-   // tableView->setRootIndex(fileModel->setRootPath(filePath));
+    // Пока что только sqlite
+    if (filePath.endsWith(".sqlite"))
+    {
+        auto data = ChartDataSqlite{}.getData(filePath);//sql
+        chartBar = themeWidget->createBarChartNew(data,true);
+        chartView->setChart(chartBar); // Отображаем
+    }
 }
 
 // Диалог для открытия папки
@@ -143,6 +134,39 @@ void MainWindow::slotChooseDirectory()
         homePath = dialog.selectedFiles().first();
     }
     tableView->setRootIndex(fileModel->setRootPath(homePath));
+}
+
+// Функция выбора Графика
+void MainWindow::slotSelectionComboboxChanged()
+{
+    QString chartType = boxType->currentText();
+
+    if(chartType == "PieChart")
+    {
+        // createPieChart
+    }
+    else if (chartType == "BarChart")
+    {
+        // createBarChart
+    }
+    else
+    {
+     //ошибка
+    }
+
+    chartView->setChart(chartBar);
+}
+
+void MainWindow::slotSelectionColorChanged()
+{
+    if (checkboxColor->checkState())
+    {
+      // Перерисовка в ЧБ
+    }
+    else
+    {
+      // Перерисовка в обычном цвете
+    }
 }
 
 MainWindow::~MainWindow()
