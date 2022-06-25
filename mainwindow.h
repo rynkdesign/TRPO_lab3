@@ -9,8 +9,8 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
-#include "themewidget.h"
 #include "data.h"
+#include "charts.h"
 
 class MainWindow : public QWidget
 {
@@ -31,10 +31,15 @@ private:
     QTableView *tableView;
     QString homePath;
     QComboBox* boxType;
-    ThemeWidget *themeWidget;
-    QChartView *chartView;
-    QChart *chartBar;
+    //ThemeWidget *themeWidget;
+    //QChartView *chartView;
     QCheckBox *checkboxColor;
+
+    struct
+    {
+        Charts* chart;
+        QChartView* chartView;
+    } chartManipulation;
 };
 
 #endif // MAINWINDOW_H

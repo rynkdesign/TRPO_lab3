@@ -35,7 +35,6 @@
 #include <QtCore/QTime>
 #include <QtCharts/QBarCategoryAxis>
 #include <QFileDialog>
-#include "themewidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -58,10 +57,9 @@ MainWindow::MainWindow(QWidget *parent)
     tableView->setModel(fileModel);
 
     // Добавление диаграммы
-    auto themeWidget = new ThemeWidget();
-    //QChart *chartBar =  themeWidget->createPieChart();
-    chartBar =  themeWidget->createBarChart(7);
-    chartView = new QChartView(chartBar);
+    //auto chart = new Charts();
+    //QChart *chartBar =  chart->createBarChart(7);
+    chartManipulation.chartView = new QChartView(chartManipulation.chart->createBarChart(7));
 
     // Объявляем Buttons
     auto directoryButton = new QPushButton ("Открыть папку");
@@ -83,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
     horizontalLayout->addLayout(verticalRightLayout);
     verticalRightLayout->addLayout(chartLayout);
     verticalLeftLayout->addWidget(tableView);
-    verticalRightLayout->addWidget(chartView);
+    verticalRightLayout->addWidget(chartManipulation.chartView);
     verticalLeftLayout->addWidget(directoryButton); // Кнопка "Открыть папку"
 
     // Buttons над графиком
@@ -119,8 +117,7 @@ void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QIte
     if (filePath.endsWith(".sqlite"))
     {
         auto data = ChartDataSqlite{}.getData(filePath);//sql
-        chartBar = themeWidget->createBarChartNew(data,true);
-        chartView->setChart(chartBar); // Отображаем
+        chartManipulation.chartView->setChart(chartManipulation.chart->createBarChartNew(data,true)); // Отображаем
     }
 }
 
@@ -153,8 +150,6 @@ void MainWindow::slotSelectionComboboxChanged()
     {
      //ошибка
     }
-
-    chartView->setChart(chartBar);
 }
 
 void MainWindow::slotSelectionColorChanged()
