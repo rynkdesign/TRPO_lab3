@@ -117,12 +117,33 @@ void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QIte
     QString filePath{""}; // Полный путь к файлу
     filePath = fileModel->filePath(indexs.constFirst());
 
+    if (!(filePath.endsWith(".sqlite") || filePath.endsWith(".json")))
+    {
+        QMessageBox messageBox;
+        messageBox.setText("Выберит файл формата .sqlite или .json");
+        messageBox.exec();
+        return;
+    }
+
     // Пока что только sqlite
     if (filePath.endsWith(".sqlite"))
     {
         auto data = ChartDataSqlite{}.getData(filePath);//sql
+
+        if (data.isEmpty())
+        {
+            QMessageBox messageBox;
+            messageBox.setText("Файл пустой");
+            messageBox.exec();
+            return;
+        }
+
         chartSettings.chart->drawChart(data);
         chartSettings.chartView->setChart(chartSettings.chart->getChart());
+    }
+    if (filePath.endsWith(".json"))
+    {
+        //Json
     }
 
 }
@@ -155,10 +176,6 @@ void MainWindow::slotSelectionComboboxChanged()
         IOCContainer::instance().RegisterInstance<IChartDrawing, barChartDrawing>();
         chartSettings.chart->reDrawChart();
         return;
-    }
-    else
-    {
-     //ошибка
     }
 }
 
