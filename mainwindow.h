@@ -21,6 +21,7 @@ private slots:
     void slotChooseDirectory();
     void slotSelectionComboboxChanged();
     void slotSelectionColorChanged();
+    void slotSaveToPdf();
 
 public:
     MainWindow(QWidget *parent = 0);

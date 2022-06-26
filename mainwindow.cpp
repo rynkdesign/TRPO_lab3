@@ -38,6 +38,14 @@
 
 int IOCContainer::s_typeId = 121;
 
+namespace
+{
+
+// Можно ли печатать Диаграмму в PDF?
+bool isCharCanPrintPDF = false;
+
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
       //QMainWindow(parent)
@@ -102,6 +110,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(checkboxColor, SIGNAL(toggled(bool)), this, SLOT(slotSelectionColorChanged())); // Выбор Ч-Б
     // Выбор конкретного файла
     connect(selectionModel,SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),this,SLOT(slotSelectionChanged(const QItemSelection &, const QItemSelection &)));
+    connect(printChartButton,SIGNAL(clicked()), this, SLOT(slotSaveToPdf()));
+
 }
 
 // Выбор конкретного файла
@@ -119,6 +129,7 @@ void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QIte
 
     if (!(filePath.endsWith(".sqlite") || filePath.endsWith(".json")))
     {
+        isCharCanPrintPDF = false;
         QMessageBox messageBox;
         messageBox.setText("Выберит файл формата .sqlite или .json");
         messageBox.exec();
@@ -145,6 +156,7 @@ void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QIte
     {
         //Json
     }
+    isCharCanPrintPDF = true;
 
 }
 
@@ -190,6 +202,40 @@ void MainWindow::slotSelectionColorChanged()
     {
         chartSettings.chart->changeColor(); // Меняем цвет
         chartSettings.chart->reDrawChart(); // Перерисовываем
+    }
+}
+
+void MainWindow::slotSaveToPdf()
+{
+    if (isCharCanPrintPDF)
+    {
+        QString savingPath("");
+
+        QFileDialog dialog(this);
+
+        dialog.setViewMode(QFileDialog::Detail); // Устанавливаем детальный вид с выбором расширения
+
+        if (dialog.exec())
+        {
+            savingPath = dialog.selectedFiles().first();
+        }
+
+        QPdfWriter writer(savingPath+".pdf");
+
+        writer.setCreator("Someone");//Указываем создателя документа
+
+        writer.setPageSize(QPagedPaintDevice::A4);//Устанавливаем размер страницы
+
+        QPainter painter(&writer);
+
+        chartSettings.chartView->render(&painter);
+        painter.end();
+    }
+    else
+    {
+        QMessageBox messageBox;
+        messageBox.setText("Отсутствует диаграмма чтобы напечатать");
+        messageBox.exec();
     }
 }
 
