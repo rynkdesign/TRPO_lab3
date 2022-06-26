@@ -24,7 +24,7 @@ void barChartDrawing::drawChart(QVector<DataStorage> data, bool isColored, QChar
     chart_->removeAllSeries();
     chart_->addSeries(series);
     chart_->setAnimationOptions(QChart::SeriesAnimations); // Красивая анимация
-    //chart_->createDefaultAxes();
+    chart_->createDefaultAxes();
 }
 
 void pieChartDrawing::drawChart(QVector<DataStorage> data, bool isColored, QChart* chart_)
@@ -66,4 +66,16 @@ void Charts::drawChart(const QVector<DataStorage>& data)
 QChart* Charts::getChart()
 {
     return chart_;
+}
+
+void Charts::changeColor()
+{
+    if(isColored_ == true)
+    {
+        isColored_ = false;
+    }
+    else
+    {
+        isColored_ = true;
+    }
 }

@@ -42,6 +42,7 @@ public:
 
     void drawChart(const QVector<DataStorage>& data);
     void reDrawChart() const;
+    void changeColor();
 
 private:
 

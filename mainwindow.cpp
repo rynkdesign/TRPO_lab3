@@ -59,8 +59,8 @@ MainWindow::MainWindow(QWidget *parent)
     tableView->setModel(fileModel);
 
     // Добавление диаграммы
-    chartManipulation.chart = new Charts{};
-    chartManipulation.chartView = new QChartView{};
+    chartSettings.chart = new Charts{};
+    chartSettings.chartView = new QChartView{};
 
     // Ставим по умолчанию barChart
     IOCContainer::instance().RegisterInstance<IChartDrawing, barChartDrawing>();
@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
     horizontalLayout->addLayout(verticalRightLayout);
     verticalRightLayout->addLayout(chartLayout);
     verticalLeftLayout->addWidget(tableView);
-    verticalRightLayout->addWidget(chartManipulation.chartView);
+    verticalRightLayout->addWidget(chartSettings.chartView);
     verticalLeftLayout->addWidget(directoryButton); // Кнопка "Открыть папку"
 
     // Buttons над графиком
@@ -121,8 +121,8 @@ void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QIte
     if (filePath.endsWith(".sqlite"))
     {
         auto data = ChartDataSqlite{}.getData(filePath);//sql
-        chartManipulation.chart->drawChart(data);
-        chartManipulation.chartView->setChart(chartManipulation.chart->getChart());
+        chartSettings.chart->drawChart(data);
+        chartSettings.chartView->setChart(chartSettings.chart->getChart());
     }
 
 }
@@ -147,13 +147,13 @@ void MainWindow::slotSelectionComboboxChanged()
     if(chartType == "PieChart")
     {
         IOCContainer::instance().RegisterInstance<IChartDrawing, pieChartDrawing>();
-        chartManipulation.chart->reDrawChart();
+        chartSettings.chart->reDrawChart();
         return;
     }
     else if (chartType == "BarChart")
     {
         IOCContainer::instance().RegisterInstance<IChartDrawing, barChartDrawing>();
-        chartManipulation.chart->reDrawChart();
+        chartSettings.chart->reDrawChart();
         return;
     }
     else
@@ -166,11 +166,13 @@ void MainWindow::slotSelectionColorChanged()
 {
     if (checkboxColor->checkState())
     {
-      // Перерисовка в ЧБ
+        chartSettings.chart->changeColor(); // Меняем цвет
+        chartSettings.chart->reDrawChart(); // Перерисовываем
     }
     else
     {
-      // Перерисовка в обычном цвете
+        chartSettings.chart->changeColor(); // Меняем цвет
+        chartSettings.chart->reDrawChart(); // Перерисовываем
     }
 }
 
