@@ -11,44 +11,43 @@
 #include <QJsonDocument>
 #include <QtCharts/QBarSeries>
 #include <QtCharts/QBarSet>
+#include <QtCharts>
 #include "data.h"
+#include "ioccontainer.h"
 
-// Потом удалить
-typedef QPair<QPointF, QString> Data;
-typedef QList<Data> DataList;
-typedef QList<DataList> DataTable;
+class IChartDrawing
+{
+public:
+    virtual void drawChart(QVector <DataStorage> data, bool isColored = false, QChart* chart_ = new QChart()) = 0;
+};
 
-QT_CHARTS_BEGIN_NAMESPACE
-class QChartView;
-class QChart;
-QT_CHARTS_END_NAMESPACE
+class barChartDrawing : public IChartDrawing
+{
+public:
+    virtual void drawChart(QVector <DataStorage> data, bool isColored = true, QChart* chart_= new QChart());
+};
 
-QT_CHARTS_USE_NAMESPACE
+class pieChartDrawing : public IChartDrawing
+{
+public:
+    virtual void drawChart(QVector <DataStorage> data, bool isColored = true, QChart* chart_= new QChart());
+};
 
 class Charts
 {
 public:
-    Charts();
-    QChart *createBarChartNew (QVector <DataStorage>, bool isColored); // НОВАЯ ФУНКЦИЯ ДЛЯ BARCHART
-    QChart *createPieChartNew (QVector<DataStorage> data, bool isColored); // НОВАЯ ФУНКЦИЯ ДЛЯ PIECHART
-    QChart *createBarChart(int valueCount) const; // Потом удалить
+    Charts(): chart_( new QChart()), isColored_ (true){}
 
-    void drawChart(const DataStorage& data);
+    QChart* getChart();
+
+    void drawChart(const QVector<DataStorage>& data);
     void reDrawChart() const;
 
-    QChart *chart_; // ChartParametrs
-    QVector <DataStorage> data_;// ChartParametrs
-
 private:
-    DataTable generateRandomData(int listCount, int valueMax, int valueCount) const; // Потом удалить
 
-
-
-    QPieSeries *series;
-
-    // Потом удалить
-    DataTable m_dataTable;
-
+    QChart *chart_;
+    QVector <DataStorage> data_;
+    bool isColored_;
 };
 
 #endif // CHARTS_H

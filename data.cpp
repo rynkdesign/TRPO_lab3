@@ -25,10 +25,10 @@ QVector <DataStorage> ChartDataSqlite::getData (QString path_)
         int i = 0;
         while (query.next() && i < 10) // Т.к. данные огромные + требования к интерфейсу, то берем только первые 10 строк
         {
-            i++;
             QString key = query.value(0).toString(); // Берем ключ превращаем в строку
             double value = query.value(1).toDouble(); // Берем значение превращаем в double
             data.push_back(DataStorage(key, value));
+            i++;
         }
     }
 

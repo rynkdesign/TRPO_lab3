@@ -1,5 +1,6 @@
 #ifndef IOCCONTAINER_H
 #define IOCCONTAINER_H
+
 #include <iostream>
 #include <functional>
 #include <cstdlib>
@@ -22,7 +23,6 @@ using namespace std;
 class IOCContainer
 
 {
-
     static int s_typeId;
 public:
     //one typeid per type
@@ -80,9 +80,11 @@ public:
 
     };
 
+
+
     template<typename T>
 
-    std::shared_ptr<T> GetttObject()
+    std::shared_ptr<T> GetObject()
     {
 
         auto typeId = GetTypeID<T>();
@@ -100,7 +102,7 @@ public:
     template<typename TInterface, typename ...TS>
     void RegisterFunctor(std::function<std::shared_ptr<TInterface>(std::shared_ptr<TS> ...ts)> functor)
     {
-        factories[GetTypeID<TInterface>()] = std::make_shared<CFactory<TInterface>>([=] {return functor(GetttObject<TS>()...); });
+        factories[GetTypeID<TInterface>()] = std::make_shared<CFactory<TInterface>>([=] {return functor(GetObject<TS>()...); });
     }
 
     //Регистрация экземпляра объекта
@@ -136,8 +138,9 @@ public:
     template<typename TInterface, typename TConcrete, typename ...TArguments>
     void RegisterInstance()
     {
-        RegisterInstance<TInterface>(std::make_shared<TConcrete>(GetttObject<TArguments>()...));
+        RegisterInstance<TInterface>(std::make_shared<TConcrete>(GetObject<TArguments>()...));
     }
+
 
 public:
     // Тут добавлен Singleton
@@ -147,6 +150,7 @@ public:
         static IOCContainer gContainer;
         return gContainer;
     }
+
 };
 
 #endif // IOCCONTAINER_H

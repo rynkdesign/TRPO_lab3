@@ -36,6 +36,8 @@
 #include <QtCharts/QBarCategoryAxis>
 #include <QFileDialog>
 
+int IOCContainer::s_typeId = 121;
+
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
       //QMainWindow(parent)
@@ -57,9 +59,11 @@ MainWindow::MainWindow(QWidget *parent)
     tableView->setModel(fileModel);
 
     // Добавление диаграммы
-    //auto chart = new Charts();
-    //QChart *chartBar =  chart->createBarChart(7);
-    chartManipulation.chartView = new QChartView(chartManipulation.chart->createBarChart(7));
+    chartManipulation.chart = new Charts{};
+    chartManipulation.chartView = new QChartView{};
+
+    // Ставим по умолчанию barChart
+    IOCContainer::instance().RegisterInstance<IChartDrawing, barChartDrawing>();
 
     // Объявляем Buttons
     auto directoryButton = new QPushButton ("Открыть папку");
@@ -117,8 +121,10 @@ void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QIte
     if (filePath.endsWith(".sqlite"))
     {
         auto data = ChartDataSqlite{}.getData(filePath);//sql
-        chartManipulation.chartView->setChart(chartManipulation.chart->createBarChartNew(data,true)); // Отображаем
+        chartManipulation.chart->drawChart(data);
+        chartManipulation.chartView->setChart(chartManipulation.chart->getChart());
     }
+
 }
 
 // Диалог для открытия папки
@@ -140,11 +146,15 @@ void MainWindow::slotSelectionComboboxChanged()
 
     if(chartType == "PieChart")
     {
-        // createPieChart
+        IOCContainer::instance().RegisterInstance<IChartDrawing, pieChartDrawing>();
+        chartManipulation.chart->reDrawChart();
+        return;
     }
     else if (chartType == "BarChart")
     {
-        // createBarChart
+        IOCContainer::instance().RegisterInstance<IChartDrawing, barChartDrawing>();
+        chartManipulation.chart->reDrawChart();
+        return;
     }
     else
     {

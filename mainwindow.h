@@ -31,15 +31,13 @@ private:
     QTableView *tableView;
     QString homePath;
     QComboBox* boxType;
-    //ThemeWidget *themeWidget;
-    //QChartView *chartView;
     QCheckBox *checkboxColor;
 
     struct
     {
         Charts* chart;
         QChartView* chartView;
-    } chartManipulation;
+    } chartSettings;
 };
 
 #endif // MAINWINDOW_H
