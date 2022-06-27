@@ -7,7 +7,7 @@ QVector <DataStorage> ChartDataSqlite::getData (QString path_)
     // Вектор для наших данных. Формат: Ключ(дата-время), значение
     QVector <DataStorage> data;
 
-    QSqlDatabase dbase = QSqlDatabase::addDatabase("QSQLITE");
+    static QSqlDatabase dbase = QSqlDatabase::addDatabase("QSQLITE");
     dbase.setDatabaseName(path_);
 
     // Проверяем на открытие
@@ -32,5 +32,52 @@ QVector <DataStorage> ChartDataSqlite::getData (QString path_)
         }
     }
 
+    return data;
+}
+
+QVector <DataStorage> ChartDataJson::getData (QString path_)
+{
+    // Вектор для наших данных. Формат: Ключ(дата-время), значение
+    QVector <DataStorage> data;
+
+    QString fileInString;
+    QFile file;
+    file.setFileName(path_);
+
+    // Проверяем на открытие
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox messageBox;
+        messageBox.setText("Невозможно открыть базу" + path_);
+        messageBox.exec();
+    }
+
+    fileInString = file.readAll();
+    file.close();
+
+    // конвертируем в JSON
+    QJsonDocument doc = QJsonDocument::fromJson(fileInString.toUtf8());
+
+    if (!doc.isArray())
+    {
+        QMessageBox messageBox;
+        messageBox.setText("Введите Json как Массив" + path_);
+        messageBox.exec();
+    }
+
+    QJsonArray jsonArr = doc.array();
+    int i = 0;
+    foreach (const QJsonValue & value, jsonArr)
+    {
+        if (value.isObject() && i < 10)
+        {
+            QJsonObject obj = value.toObject();
+            QString key = obj["Time"].toString();
+            double value = obj["Value"].toDouble();
+
+            data.push_back(DataStorage(key, value));
+            i++;
+        }
+    }
     return data;
 }

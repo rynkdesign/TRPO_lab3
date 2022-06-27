@@ -57,9 +57,17 @@ void Charts::reDrawChart() const
     IOCContainer::instance().GetObject<IChartDrawing>()->drawChart(data_,isColored_,chart_);
 }
 
-void Charts::drawChart(const QVector<DataStorage>& data)
+void Charts::updateData(const QString& filePath)
 {
-    data_ = data;
+    data_ = IOCContainer::instance().GetObject<IChartData>()->getData(filePath);
+
+    if (data_.isEmpty())
+    {
+        QMessageBox messageBox;
+        messageBox.setText("Файл пустой");
+        messageBox.exec();
+        return;
+    }
     reDrawChart();
 }
 

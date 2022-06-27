@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     auto printChartButton = new QPushButton ("Печать графика");
     checkboxColor = new QCheckBox("Черно-белый график");
     auto boxLabel = new QLabel("Выберите тип диаграммы");
+    auto directoryLabel = new QLabel("Выберите файл БД:");
 
     boxType = new QComboBox(); // Выбор типа графика
     boxType->insertItem(1, QString("BarChart"));
@@ -94,7 +95,9 @@ MainWindow::MainWindow(QWidget *parent)
     verticalRightLayout->addLayout(chartLayout);
     verticalLeftLayout->addWidget(tableView);
     verticalRightLayout->addWidget(chartSettings.chartView);
+    verticalLeftLayout->addWidget(directoryLabel);
     verticalLeftLayout->addWidget(directoryButton); // Кнопка "Открыть папку"
+
 
     // Buttons над графиком
     chartLayout->addWidget(boxLabel); // Label над графиком
@@ -110,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(checkboxColor, SIGNAL(toggled(bool)), this, SLOT(slotSelectionColorChanged())); // Выбор Ч-Б
     // Выбор конкретного файла
     connect(selectionModel,SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),this,SLOT(slotSelectionChanged(const QItemSelection &, const QItemSelection &)));
-    connect(printChartButton,SIGNAL(clicked()), this, SLOT(slotSaveToPdf()));
+    connect(printChartButton,SIGNAL(clicked()), this, SLOT(slotSaveToPdf())); // Печать в PDF
 
 }
 
@@ -127,37 +130,28 @@ void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QIte
     QString filePath{""}; // Полный путь к файлу
     filePath = fileModel->filePath(indexs.constFirst());
 
-    if (!(filePath.endsWith(".sqlite") || filePath.endsWith(".json")))
+    if (filePath.endsWith(".sqlite"))
+    {
+        IOCContainer::instance().RegisterInstance<IChartData, ChartDataSqlite>();
+        chartSettings.chart->updateData(filePath);
+        chartSettings.chartView->setChart(chartSettings.chart->getChart());
+        isCharCanPrintPDF = true;
+    }
+    else if (filePath.endsWith(".json"))
+    {
+        IOCContainer::instance().RegisterInstance<IChartData, ChartDataJson>();
+
+        chartSettings.chart->updateData(filePath);
+        chartSettings.chartView->setChart(chartSettings.chart->getChart());
+        isCharCanPrintPDF = true;
+    }
+    else
     {
         isCharCanPrintPDF = false;
         QMessageBox messageBox;
         messageBox.setText("Выберит файл формата .sqlite или .json");
         messageBox.exec();
-        return;
     }
-
-    // Пока что только sqlite
-    if (filePath.endsWith(".sqlite"))
-    {
-        auto data = ChartDataSqlite{}.getData(filePath);//sql
-
-        if (data.isEmpty())
-        {
-            QMessageBox messageBox;
-            messageBox.setText("Файл пустой");
-            messageBox.exec();
-            return;
-        }
-
-        chartSettings.chart->drawChart(data);
-        chartSettings.chartView->setChart(chartSettings.chart->getChart());
-    }
-    if (filePath.endsWith(".json"))
-    {
-        //Json
-    }
-    isCharCanPrintPDF = true;
-
 }
 
 // Диалог для открытия папки

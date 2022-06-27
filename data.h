@@ -14,8 +14,21 @@ public:
 };
 
 
+class IChartData
+{
+public:
+    virtual QVector <DataStorage> getData (QString path_) = 0;
+};
+
 //Для SQLITE
-class ChartDataSqlite
+class ChartDataSqlite : public IChartData
+{
+public:
+    QVector <DataStorage> getData (QString path_);
+};
+
+// Для JSON
+class ChartDataJson : public IChartData
 {
 public:
     QVector <DataStorage> getData (QString path_);

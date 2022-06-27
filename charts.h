@@ -40,7 +40,7 @@ public:
 
     QChart* getChart();
 
-    void drawChart(const QVector<DataStorage>& data);
+    void updateData(const QString& filePath);
     void reDrawChart() const;
     void changeColor();
 
