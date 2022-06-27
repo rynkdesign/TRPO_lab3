@@ -36,6 +36,7 @@
 #include <QtCharts/QBarCategoryAxis>
 #include <QFileDialog>
 
+// Определение s_typeId IOC Контейнера
 int IOCContainer::s_typeId = 121;
 
 namespace
@@ -105,89 +106,92 @@ MainWindow::MainWindow(QWidget *parent)
     chartLayout->addWidget(checkboxColor); // Ч-б
     chartLayout->addWidget(printChartButton); // Печать в PDF
 
+    // Для отслеживания выбранных элементов
     QItemSelectionModel *selectionModel = tableView->selectionModel();
 
     // Slots
     connect(directoryButton,&QPushButton::clicked,this,&MainWindow::slotChooseDirectory); // Кнопка выбора папки
     connect(boxType,SIGNAL(currentTextChanged(const QString&)),this,SLOT(slotSelectionComboboxChanged())); // Выбор типа графика
     connect(checkboxColor, SIGNAL(toggled(bool)), this, SLOT(slotSelectionColorChanged())); // Выбор Ч-Б
+
     // Выбор конкретного файла
     connect(selectionModel,SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),this,SLOT(slotSelectionChanged(const QItemSelection &, const QItemSelection &)));
+
     connect(printChartButton,SIGNAL(clicked()), this, SLOT(slotSaveToPdf())); // Печать в PDF
 
 }
 
-// Выбор конкретного файла
+// Слот обработки выбора конкретного файла
 void MainWindow::slotSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_UNUSED(deselected);
-    QModelIndexList indexs =  selected.indexes();
+    QModelIndexList indexs =  selected.indexes(); // Взяли индекс у конкретного выбранного файла
     if (indexs.count() < 1)
     {
         return;
     }
 
-    QString filePath{""}; // Полный путь к файлу
-    filePath = fileModel->filePath(indexs.constFirst());
+    QString filePath{""};
+    filePath = fileModel->filePath(indexs.constFirst()); // Получили полный путь к этому файлу
 
-    if (filePath.endsWith(".sqlite"))
+    if (filePath.endsWith(".sqlite")) // Если полный путь файла оканчивается на .sqlite
     {
-        IOCContainer::instance().RegisterInstance<IChartData, ChartDataSqlite>();
-        chartSettings.chart->updateData(filePath);
-        chartSettings.chartView->setChart(chartSettings.chart->getChart());
-        isCharCanPrintPDF = true;
+        IOCContainer::instance().RegisterInstance<IChartData, ChartDataSqlite>(); // Задаём интерфейсу чтение SQLITE файлов
+        chartSettings.chart->updateData(filePath); // Обновляем данные
+        chartSettings.chartView->setChart(chartSettings.chart->getChart()); // Устанавливаем Диаграмму
+        isCharCanPrintPDF = true; // Теперь её можно печатать
     }
-    else if (filePath.endsWith(".json"))
+    else if (filePath.endsWith(".json")) // Если полный путь файла оканчивается на .json
     {
-        IOCContainer::instance().RegisterInstance<IChartData, ChartDataJson>();
-
-        chartSettings.chart->updateData(filePath);
-        chartSettings.chartView->setChart(chartSettings.chart->getChart());
-        isCharCanPrintPDF = true;
+        IOCContainer::instance().RegisterInstance<IChartData, ChartDataJson>();// Задаём интерфейсу чтение Json файлов
+        chartSettings.chart->updateData(filePath); // Обновляем данные
+        chartSettings.chartView->setChart(chartSettings.chart->getChart());// Устанавливаем Диаграмму
+        isCharCanPrintPDF = true;// Теперь её можно печатать
     }
     else
     {
-        isCharCanPrintPDF = false;
+        isCharCanPrintPDF = false; // Нельзя печатать
         QMessageBox messageBox;
         messageBox.setText("Выберит файл формата .sqlite или .json");
         messageBox.exec();
     }
 }
 
-// Диалог для открытия папки
+// Слот обработки выбора Папки для отображения файлов
 void MainWindow::slotChooseDirectory()
 {
     QFileDialog dialog{this};
-    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setFileMode(QFileDialog::Directory); // Открываем диалог
     if ( dialog.exec() )
     {
-        homePath = dialog.selectedFiles().first();
+        homePath = dialog.selectedFiles().first(); // Получаем выбранную директорию из диалога
     }
-    tableView->setRootIndex(fileModel->setRootPath(homePath));
+    tableView->setRootIndex(fileModel->setRootPath(homePath)); // Устанавливаем в отображение файлов этот путь
 }
 
-// Функция выбора Графика
+// Слот обработки выбора Типа Диаграмм с помощью Combobox (Выпадающего списка)
 void MainWindow::slotSelectionComboboxChanged()
 {
-    QString chartType = boxType->currentText();
+    QString chartType = boxType->currentText(); // Получаем текст из Combobox
 
     if(chartType == "PieChart")
     {
-        IOCContainer::instance().RegisterInstance<IChartDrawing, pieChartDrawing>();
-        chartSettings.chart->reDrawChart();
+        IOCContainer::instance().RegisterInstance<IChartDrawing, pieChartDrawing>(); // Задаём интерфейсу Круговую Диаграмму
+        chartSettings.chart->reDrawChart(); // Перерисовываем
         return;
     }
     else if (chartType == "BarChart")
     {
-        IOCContainer::instance().RegisterInstance<IChartDrawing, barChartDrawing>();
-        chartSettings.chart->reDrawChart();
+        IOCContainer::instance().RegisterInstance<IChartDrawing, barChartDrawing>(); // Задаём интерфейсу Вертикальную Диаграмму
+        chartSettings.chart->reDrawChart(); // Перерисовываем
         return;
     }
 }
 
+// Слот обработки выбора цвета: Цветной/ЧБ с помощью Checkbox (Выбор: Да/Нет)
 void MainWindow::slotSelectionColorChanged()
 {
-    if (checkboxColor->checkState())
+    if (checkboxColor->checkState()) // Если Чекбокс активен
     {
         chartSettings.chart->changeColor(); // Меняем цвет
         chartSettings.chart->reDrawChart(); // Перерисовываем
@@ -199,30 +203,31 @@ void MainWindow::slotSelectionColorChanged()
     }
 }
 
+// Слот обработки сохранения Диаграммы в PDF
 void MainWindow::slotSaveToPdf()
 {
-    if (isCharCanPrintPDF)
+    if (isCharCanPrintPDF) // Если можно печатать
     {
         QString savingPath("");
 
-        QFileDialog dialog(this);
+        QFileDialog dialog(this); // Создаём диалог
 
         dialog.setViewMode(QFileDialog::Detail); // Устанавливаем детальный вид с выбором расширения
 
         if (dialog.exec())
         {
-            savingPath = dialog.selectedFiles().first();
+            savingPath = dialog.selectedFiles().first(); // Получаем из диалога директорию для сохранения
         }
 
-        QPdfWriter writer(savingPath+".pdf");
+        QPdfWriter writer(savingPath+".pdf"); // Добавляем расширение .pdf
 
-        writer.setCreator("Someone");//Указываем создателя документа
+        writer.setCreator("Someone"); // Указываем создателя документа
 
-        writer.setPageSize(QPagedPaintDevice::A4);//Устанавливаем размер страницы
+        writer.setPageSize(QPagedPaintDevice::A4); // Устанавливаем размер страницы
 
         QPainter painter(&writer);
 
-        chartSettings.chartView->render(&painter);
+        chartSettings.chartView->render(&painter); // Печатаем Диаграмму
         painter.end();
     }
     else

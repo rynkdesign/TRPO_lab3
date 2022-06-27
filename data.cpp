@@ -2,11 +2,13 @@
 #include <QMessageBox>
 #include <QtSql>
 
+// Чтение данных формата .sqlite
 QVector <DataStorage> ChartDataSqlite::getData (QString path_)
 {
     // Вектор для наших данных. Формат: Ключ(дата-время), значение
     QVector <DataStorage> data;
 
+    // Соединяемся по умолчанию с драйвером "QSQLITE"
     static QSqlDatabase dbase = QSqlDatabase::addDatabase("QSQLITE");
     dbase.setDatabaseName(path_);
 
@@ -21,13 +23,13 @@ QVector <DataStorage> ChartDataSqlite::getData (QString path_)
     // Собираем данные в data
     else
     {
-        QSqlQuery query("SELECT * FROM " + dbase.tables().takeFirst());
+        QSqlQuery query("SELECT * FROM " + dbase.tables().takeFirst()); // Создаём запрос для SQL таблицы
         int i = 0;
         while (query.next() && i < 10) // Т.к. данные огромные + требования к интерфейсу, то берем только первые 10 строк
         {
             QString key = query.value(0).toString(); // Берем ключ превращаем в строку
             double value = query.value(1).toDouble(); // Берем значение превращаем в double
-            data.push_back(DataStorage(key, value));
+            data.push_back(DataStorage(key, value)); // Пушим это всё в data
             i++;
         }
     }
@@ -35,11 +37,13 @@ QVector <DataStorage> ChartDataSqlite::getData (QString path_)
     return data;
 }
 
+// Чтение данных формата .json
 QVector <DataStorage> ChartDataJson::getData (QString path_)
 {
     // Вектор для наших данных. Формат: Ключ(дата-время), значение
     QVector <DataStorage> data;
 
+    // Для начала прочитаем весь файл в QString
     QString fileInString;
     QFile file;
     file.setFileName(path_);
@@ -55,9 +59,10 @@ QVector <DataStorage> ChartDataJson::getData (QString path_)
     fileInString = file.readAll();
     file.close();
 
-    // конвертируем в JSON
+    //Теперь конвертируем в JSON
     QJsonDocument doc = QJsonDocument::fromJson(fileInString.toUtf8());
 
+    //т.к. у меня Json базы используют [ ], то я проверяю на Array (Если на {} то Object)
     if (!doc.isArray())
     {
         QMessageBox messageBox;
@@ -67,15 +72,15 @@ QVector <DataStorage> ChartDataJson::getData (QString path_)
 
     QJsonArray jsonArr = doc.array();
     int i = 0;
-    foreach (const QJsonValue & value, jsonArr)
+    foreach (const QJsonValue & value, jsonArr) // Идём по элементам
     {
-        if (value.isObject() && i < 10)
+        if (value.isObject() && i < 10) // Т.к. данные огромные + требования к интерфейсу, то берем только первые 10 строк
         {
             QJsonObject obj = value.toObject();
-            QString key = obj["Time"].toString();
-            double value = obj["Value"].toDouble();
+            QString key = obj["Time"].toString(); // Берем ключ превращаем в строку
+            double value = obj["Value"].toDouble(); // Берем значение превращаем в double
 
-            data.push_back(DataStorage(key, value));
+            data.push_back(DataStorage(key, value)); // Пушим это всё в data
             i++;
         }
     }
