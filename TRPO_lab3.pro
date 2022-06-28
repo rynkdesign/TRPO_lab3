@@ -1,6 +1,8 @@
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += sql
+QT += charts
 
 CONFIG += c++11
 
@@ -9,14 +11,18 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    charts.cpp \
+    data.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    charts.h \
+    data.h \
+    ioccontainer.h \
     mainwindow.h
 
-FORMS += \
-    mainwindow.ui
+FORMS +=
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
