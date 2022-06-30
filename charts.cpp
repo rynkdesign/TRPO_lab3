@@ -8,14 +8,18 @@ void barChartDrawing::drawChart(QVector<DataStorage> data, bool isColored, QChar
     QBarSeries *series = new QBarSeries{chart_}; // Задаём серии данных для Вертикальной диаграммы
 
     int i = 0; // Переменная для подсчёта кол-ва считываемых данных из базы
+    int j = 0; // Переменная для чб цвета
     foreach (DataStorage elem, data) // Идём по каждому элементу
     {
         QString legendHeader (elem.key); // Записываем Ключ
         QBarSet *set = new QBarSet(legendHeader); // Задаём набор данных для 1 вертикальной диаграммы
         if (!isColored) // Отрисовка цвета
         {
-            auto color_ = i % 2 ? Qt::black : Qt::lightGray;
-            set->setBrush(QBrush(color_, Qt::SolidPattern));
+//            auto color_ = i % 2 ? Qt::black : Qt::lightGray;
+//            set->setBrush(QBrush(color_, Qt::SolidPattern));
+            set->setColor(QColor(j,j,j));
+            j+=25;
+
         }
         *set << elem.value; // Добавляем в набор значение
         series->append(set); // Добавлеяем набор в серию
@@ -36,14 +40,17 @@ void pieChartDrawing::drawChart(QVector<DataStorage> data, bool isColored, QChar
     QPieSeries *series = new QPieSeries{chart_}; // Задаём серии данных для Круговой диаграммы
 
     int i = 0; // Переменная для подсчёта кол-ва считываемых данных из базы
+    int j = 0; // Переменная для чб цвет
     foreach (DataStorage elem, data) // Идём по каждому элементу
     {
         QString legendHeader (elem.key); // Записываем Ключ
         series->append(legendHeader, elem.value); // Добавлеяем ключ и значение в серию
         if (!isColored) // Отрисовка цвета
         {
-            auto color_ = i % 2 ? Qt::black : Qt::lightGray;
-            series->slices().at(i)->setBrush(QBrush(color_, Qt::SolidPattern));
+//            auto color_ = i % 2 ? Qt::black : Qt::lightGray;
+//            series->slices().at(i)->setBrush(QBrush(color_, Qt::SolidPattern));
+            series->slices().at(i)->setColor(QColor(j,j,j));
+            j+=25;
         }
         i++;
     }

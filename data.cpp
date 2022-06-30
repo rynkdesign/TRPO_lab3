@@ -13,7 +13,7 @@ QVector <DataStorage> ChartDataSqlite::getData (QString path_)
     dbase.setDatabaseName(path_);
 
     // Проверяем на открытие
-    if (!dbase.open())
+    if (dbase.open())
     {
         QMessageBox messageBox;
         messageBox.setText("Невозможно открыть базу" + path_);
